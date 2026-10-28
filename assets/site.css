@@ -1,5 +1,5 @@
 /* =========================================================
-   AIコマーシャル+ 全ページ共通スタイル
+   AI COMMERCIAL+ 全ページ共通スタイル
    暗い画面に映像を映えさせる、シネマティックな構成
    ========================================================= */
 
@@ -80,7 +80,7 @@ img, svg, video { max-width: 100%; display: block; }
 .capsule > * { position: relative; }
 .capsule .menu-btn i { display: inline-flex; gap: 3px; }
 .capsule .menu-btn i b { width: 6px; height: 6px; border: 1px solid currentColor; border-radius: 50%; }
-.capsule .brand { font-family: var(--font-ja); font-weight: 900; font-size: 15px; letter-spacing: .04em; }
+.capsule .brand { font-family: var(--font-en); font-weight: 700; font-size: 15px; letter-spacing: .06em; }
 .capsule .brand svg { height: 22px; width: auto; overflow: visible; }
 .capsule .cap-contact { color: var(--lime); }
 .capsule > *:hover { color: var(--lime); }
@@ -166,7 +166,7 @@ img, svg, video { max-width: 100%; display: block; }
 .hero-rot .rot { font-family: var(--font-mono); color: var(--text); }
 .hero-actions { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
 .hero-data { position: absolute; right: calc(var(--gutter) + 40px); top: 24%; display: grid; gap: 22px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; color: var(--sub); }
-.hero-data div { display: grid; gap: 2px; padding-left: 14px; border-left: 1px solid var(--lime); }
+.hero-data div { display: grid; gap: 2px; padding: 8px 16px 8px 14px; border-left: 1px solid var(--lime); background: rgba(6,7,10,.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .hero-data b { font-size: 15px; color: var(--text); font-weight: 400; letter-spacing: .08em; }
 .hero-cards { position: absolute; right: var(--gutter); bottom: clamp(36px, 6vh, 64px); display: flex; gap: 14px; }
 .hero-card { position: relative; width: 220px; aspect-ratio: 16 / 10; border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; text-decoration: none; background: var(--bg-2); transition: transform .4s var(--ease), border-color .3s; }

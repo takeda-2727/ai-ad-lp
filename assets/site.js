@@ -1,4 +1,4 @@
-// AIコマーシャル+ 全ページ共通スクリプト
+// AI COMMERCIAL+ 全ページ共通スクリプト
 (function () {
   var root = document.documentElement;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
