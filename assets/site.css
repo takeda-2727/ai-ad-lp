@@ -151,6 +151,8 @@ img, svg, video { max-width: 100%; display: block; }
 
 /* ---------- ヒーロー ---------- */
 .hero { position: relative; height: 100svh; min-height: 640px; overflow: hidden; }
+.hero-stage { position: relative; height: 100%; }
+.hero-media::after { content: ''; position: absolute; inset: 0; background: var(--bg); opacity: 0; pointer-events: none; }
 .hero-media { position: absolute; inset: 0; background: radial-gradient(70% 80% at 70% 40%, #14224F 0%, #07080B 70%); }
 .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s; }
 .hero-video.is-ready { opacity: 1; }
@@ -158,7 +160,7 @@ img, svg, video { max-width: 100%; display: block; }
 .hero-inner { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 var(--gutter) clamp(90px, 12vh, 140px); }
 .hero-kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .2em; color: var(--sub); margin-bottom: 22px; }
 .hero-kicker b { color: var(--lime); font-weight: 400; }
-.hero-title { font-weight: 700; font-size: clamp(40px, 6.2vw, 100px); line-height: 1.08; letter-spacing: -.01em; max-width: 12em; }
+.hero-title { font-weight: 700; font-size: clamp(40px, 6.2vw, 100px); line-height: 1.08; letter-spacing: -.01em; max-width: 12em; filter: drop-shadow(0 2px 16px rgba(6,7,10,.6)); }
 .hero-title em { font-style: normal; color: var(--lime); }
 .nb { white-space: nowrap; }
 .hero-rot { margin-top: 22px; font-family: var(--font-en); font-size: clamp(20px, 2.6vw, 36px); font-weight: 500; color: var(--sub); }
@@ -427,9 +429,9 @@ img, svg, video { max-width: 100%; display: block; }
 .ch-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ch-media video + video { display: none; }
 .ch-list { list-style: none; padding: 0; display: grid; gap: 28px; }
-.ch small { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--lime); }
-.ch h3 { margin-top: 6px; font-size: clamp(22px, 2.4vw, 34px); line-height: 1.3; }
-.ch p { margin-top: 10px; color: var(--sub); font-size: 15px; }
+.chapter small { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--lime); }
+.chapter h3 { margin-top: 6px; font-size: clamp(22px, 2.4vw, 34px); line-height: 1.3; }
+.chapter p { margin-top: 10px; color: var(--sub); font-size: 15px; }
 @media (max-width: 860px) { .chapters .scene-stage { grid-template-columns: 1fr; } .ch-media { aspect-ratio: 16 / 10; } }
 
 /* 制作例：列ごとに違う速さで流れる */
@@ -457,6 +459,19 @@ img, svg, video { max-width: 100%; display: block; }
   .chapters { height: 360vh; }
   .kinetic .scene-stage, .expand .scene-stage, .chapters .scene-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
   .kinetic .scene-stage { padding: 80px 0 32px; }
+
+  /* ヒーロー：留まっているあいだに映像が暗く沈み、見出しが大きく浮かび上がる
+     .hero-fade の opacity / transform は登場の動きが使うので、ここでは filter と translate / scale で動かす */
+  .hero { height: 200vh; min-height: 0; overflow: visible; }
+  .hero-stage { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 640px; overflow: hidden; }
+  .hero-video.is-ready { filter: brightness(calc(1 - var(--p) * .45)) saturate(calc(1 - var(--p) * .5)) blur(calc(var(--p) * 6px)); scale: calc(1 + var(--p) * .12); }
+  .hero-media::after { opacity: calc(var(--p) * .55); }
+  .hero-title { transform-origin: left bottom; translate: 0 calc(var(--p) * -12vh); scale: calc(1 + var(--p) * .16); }
+  /* 1 文字ずつの枠で切れないよう、影は text-shadow ではなく em 全体の drop-shadow で付ける */
+  .hero-title em { filter: drop-shadow(0 0 calc(var(--p) * 18px) rgba(198,244,50,.6)); }
+  .hero-actions { translate: 0 calc(var(--p) * -12vh); }
+  .hero-kicker, .hero-rot, .hero-data, .hero-cards, .scroll-cue { filter: opacity(max(0, calc(1 - var(--p) * 3))); }
+  .hero-kicker, .hero-rot { translate: 0 calc(var(--p) * -12vh); }
 
   /* 私たちについて：留まっているあいだに文章が光りきり、最後にボタンが上がってくる */
   .about-scene { height: 220vh; padding: 0; }
@@ -490,8 +505,8 @@ img, svg, video { max-width: 100%; display: block; }
   .ch-media video + video { display: block; }
   .ch-media video { opacity: 0; clip-path: inset(100% 0 0 0); transform: scale(1.15); transition: clip-path 1s var(--ease), transform 1.4s var(--ease), opacity 0s 1s; }
   .ch-media video.is-on { z-index: 1; opacity: 1; clip-path: inset(0); transform: none; transition: clip-path 1s var(--ease), transform 1.4s var(--ease), opacity 0s; }
-  .ch { opacity: .22; transition: opacity .6s var(--ease); }
-  .ch.is-on { opacity: 1; }
+  .chapter { opacity: .22; transition: opacity .6s var(--ease); }
+  .chapter.is-on { opacity: 1; }
   @media (max-width: 860px) {
     .chapters .scene-stage { align-content: center; gap: 20px; }
     .ch-side { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -499,8 +514,8 @@ img, svg, video { max-width: 100%; display: block; }
     .ch-count b { display: inline; font-size: 40px; margin-right: 6px; }
     .ch-bar { display: none; }
     .ch-media { height: 38vh; }
-    .ch { display: none; }
-    .ch.is-on { display: block; }
+    .chapter { display: none; }
+    .chapter.is-on { display: block; }
   }
 
   /* 列ごとに速さと向きを変える */

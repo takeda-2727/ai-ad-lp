@@ -132,7 +132,7 @@
   // ---------- スクロール演出：場面ごとの進み具合（0〜1）を --p に渡す ----------
   var scenes = $$('[data-scene]');
   var chapters = $$('[data-chapters]').map(function (el) {
-    return { el: el, items: $$('.ch', el), videos: $$('.ch-media video', el), count: $('.ch-count b', el), now: -1 };
+    return { el: el, items: $$('.chapter', el), videos: $$('.ch-media video', el), count: $('.ch-count b', el), now: -1 };
   });
   var setChapter = function (c, n) {
     if (n === c.now) return;
