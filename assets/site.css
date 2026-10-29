@@ -195,7 +195,14 @@ img, svg, video { max-width: 100%; display: block; }
 .row:hover .row-preview { opacity: 1; transform: translateY(-50%) scale(1) rotate(-2deg); }
 .row .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .row .tags span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; color: var(--sub); }
-@media (max-width: 960px) { .row { grid-template-columns: 50px 1fr 30px; } .row p, .row .tags { grid-column: 2 / 3; } .row-preview { display: none; } }
+/* 狭い画面：1 段目に番号・見出し・矢印、2 段目の見出しの下に説明とタグ */
+@media (max-width: 960px) {
+  .row { grid-template-columns: 50px 1fr 30px; row-gap: 10px; }
+  .row h3 { grid-column: 2; grid-row: 1; }
+  .row .go { grid-column: 3; grid-row: 1; }
+  .row > div { grid-column: 2 / 4; grid-row: 2; }
+  .row-preview { display: none; }
+}
 
 /* ---------- 数字（カウントアップ） ---------- */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
@@ -386,10 +393,15 @@ img, svg, video { max-width: 100%; display: block; }
    ========================================================= */
 [data-scene] { --p: 0; position: relative; }
 
+/* 私たちについて・数字 */
+.about-more { margin-top: 40px; }
+.numbers { padding-top: 0; }
+
 /* 横に流れる大きな文字 */
 .kinetic { padding: var(--section-y) 0; overflow: hidden; }
 .kinetic .scene-stage { display: flex; flex-direction: column; justify-content: center; }
-.k-line { font-family: var(--font-en); font-weight: 700; font-size: clamp(64px, 15vw, 240px); line-height: .9; letter-spacing: -.04em; white-space: nowrap; padding: 0 var(--gutter); }
+/* 画面の高さにも合わせて縮め、4 行と一文が上下に見切れないようにする */
+.k-line { font-family: var(--font-en); font-weight: 700; font-size: clamp(48px, min(15vw, 15vh), 240px); line-height: .9; letter-spacing: -.04em; white-space: nowrap; padding: 0 var(--gutter); }
 .k-2 { text-align: right; color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.5); }
 .k-4 { text-align: right; }
 .k-4 em { font-style: normal; color: var(--lime); }
@@ -444,6 +456,13 @@ img, svg, video { max-width: 100%; display: block; }
   .expand { height: 260vh; }
   .chapters { height: 360vh; }
   .kinetic .scene-stage, .expand .scene-stage, .chapters .scene-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .kinetic .scene-stage { padding: 80px 0 32px; }
+
+  /* 私たちについて：留まっているあいだに文章が光りきり、最後にボタンが上がってくる */
+  .about-scene { height: 220vh; padding: 0; }
+  .about-scene .scene-stage { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; }
+  .about-scene .head { margin-bottom: 0; }
+  .about-more { opacity: calc(var(--p) * 6 - 4.6); transform: translateY(calc((1 - var(--p)) * 50px)); }
 
   /* 行ごとに逆向きに流れる */
   .k-line { will-change: transform; }
@@ -490,6 +509,17 @@ img, svg, video { max-width: 100%; display: block; }
   .g-col:nth-child(2) { --speed: -180px; }
   .g-col:nth-child(3) { --speed: 60px; }
   @media (max-width: 760px) { .g-col:nth-child(1) { --speed: 50px; } .g-col:nth-child(2) { --speed: -80px; } .g-col:nth-child(3) { --speed: 0px; } }
+}
+
+/* 数字：線が伸び、3 つの数字が順にせり上がってカウントアップする（site.js が [data-step] に --q を渡す）
+   縦に並ぶ狭い画面や低い画面では留めず、ふつうの表示にする */
+@media (prefers-reduced-motion: no-preference) and (min-width: 861px) and (min-height: 600px) {
+  .numbers { height: 260vh; padding: 0; }
+  .numbers .scene-stage { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; padding-top: 60px; }
+  .numbers .head { margin-bottom: clamp(32px, 5vh, 64px); }
+  .numbers .stats { position: relative; border-top-color: transparent; }
+  .numbers .stats::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--line-strong); transform-origin: left; transform: scaleX(min(1, calc(var(--p) * 6))); }
+  .numbers .stat { opacity: var(--q, 1); transform: translateY(calc((1 - var(--q, 1)) * 60px)); }
 }
 
 /* =========================================================

@@ -68,7 +68,8 @@
       });
     };
     walk(el, false);
-    return { el: el, spans: spans, lit: 0 };
+    var scene = el.closest('[data-scene]');
+    return { el: el, spans: spans, lit: 0, scene: scene, stage: scene && $('.scene-stage', scene) };
   });
 
   // ヒーローとページ見出しの文字を出す
@@ -143,6 +144,9 @@
     });
     if (c.count && n >= 0) c.count.textContent = String(n + 1).padStart(2, '0');
   };
+  var stepScenes = $$('[data-steps]').map(function (el) {
+    return { el: el, stage: $('.scene-stage', el), steps: $$('[data-step]', el) };
+  });
   var sceneQueued = false;
   var updateScenes = function () {
     sceneQueued = false;
@@ -159,6 +163,27 @@
       if (r.bottom < 0 || r.top > vh) { setChapter(c, -1); return; }
       var p = -r.top / Math.max(1, r.height - vh);
       setChapter(c, Math.max(0, Math.min(c.items.length - 1, Math.floor(p * c.items.length))));
+    });
+    // 数字の場面：留まっているあいだに 1 つずつ出して、スクロールに合わせて数える
+    stepScenes.forEach(function (s) {
+      var pinned = !reduce && getComputedStyle(s.stage).position === 'sticky';
+      if (!pinned) {
+        // 画面の大きさが変わって留めなくなったら、数字は最終の値で見せる
+        if (s.el.dataset.pinned) {
+          delete s.el.dataset.pinned;
+          s.steps.forEach(function (st) { st.style.removeProperty('--q'); });
+          $$('[data-count]', s.el).forEach(function (c) { c.textContent = c.getAttribute('data-count'); });
+        }
+        return;
+      }
+      s.el.dataset.pinned = '1';
+      var r = s.el.getBoundingClientRect();
+      var p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height - vh)));
+      s.steps.forEach(function (st, i) {
+        var q = Math.max(0, Math.min(1, (p - 0.05 - i * 0.25) / 0.25));
+        st.style.setProperty('--q', q.toFixed(3));
+        $$('[data-count]', st).forEach(function (c) { c.textContent = Math.round(parseFloat(c.getAttribute('data-count')) * q); });
+      });
     });
   };
   var queueScenes = function () { if (!sceneQueued) { sceneQueued = true; requestAnimationFrame(updateScenes); } };
@@ -206,13 +231,20 @@
       return false;
     });
     counters = counters.filter(function (el) {
+      // 留まっている数字の場面では、スクロールに合わせて数える（updateScenes）
+      var steps = el.closest('[data-steps]');
+      if (steps && steps.dataset.pinned) return false;
       if (el.getBoundingClientRect().top > vh * 0.9) return true;
       countUp(el);
       return false;
     });
     if (!reduce) glows.forEach(function (g) {
-      var r = g.el.getBoundingClientRect();
-      var p = Math.max(0, Math.min(1, (vh * 0.85 - r.top) / (r.height + vh * 0.3)));
+      var r = g.el.getBoundingClientRect(), p;
+      // 画面に留まる場面の中なら、留まっているあいだの前 3/4 で光りきる
+      if (g.stage && getComputedStyle(g.stage).position === 'sticky') {
+        var sr = g.scene.getBoundingClientRect();
+        p = Math.max(0, Math.min(1, -sr.top / Math.max(1, sr.height - vh) / 0.75));
+      } else p = Math.max(0, Math.min(1, (vh * 0.85 - r.top) / (r.height + vh * 0.3)));
       var n = Math.round(p * g.spans.length);
       if (n === g.lit) return;
       for (var i = Math.min(n, g.lit); i < Math.max(n, g.lit); i++) g.spans[i].classList.toggle('on', i < n);
