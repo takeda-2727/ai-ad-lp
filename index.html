@@ -82,6 +82,17 @@ document.documentElement.classList.add('js');
 <p class="scroll-cue" aria-hidden="true">⟨↓ SCROLL DOWN ↓⟩</p>
 </section>
 
+<!-- ===== スクロールで横に流れる大きな文字 ===== -->
+<section class="kinetic" data-scene aria-label="撮影はいらない">
+<div class="scene-stage">
+<p class="k-line k-1" aria-hidden="true">NO CAMERA</p>
+<p class="k-line k-2" aria-hidden="true">NO STUDIO</p>
+<p class="k-line k-3" aria-hidden="true">NO CAST</p>
+<p class="k-line k-4" aria-hidden="true"><em>JUST AI.</em></p>
+<p class="k-note">カメラも、スタジオも、キャストもいらない。<br>映像は、AIでつくります。</p>
+</div>
+</section>
+
 <!-- ===== 私たちについて ===== -->
 <section class="section" aria-labelledby="about-label">
 <div class="wrap">
@@ -117,6 +128,27 @@ document.documentElement.classList.add('js');
 <a class="row" href="service.html" data-reveal><span class="no">03</span><h3>企画・コピー提案</h3><div><p>AIで切り口の違う企画とキャッチコピーを何案も出し、勝てそうな案に絞って提案します。</p><div class="tags"><span>CONCEPT</span><span>COPY</span><span>STORYBOARD</span></div></div><span class="go">→</span><span class="row-preview"><video src="assets/service-plan.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></span></a>
 <a class="row" href="service.html" data-reveal><span class="no">04</span><h3>媒体ごとの書き出し</h3><div><p>できあがった広告を、出したい媒体のサイズと尺に合わせて仕上げて納品します。</p><div class="tags"><span>TAXI</span><span>YOUTUBE</span><span>INSTAGRAM</span><span>X</span></div></div><span class="go">→</span><span class="row-preview"><video src="assets/hero-2.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></span></a>
 </div>
+</div>
+</section>
+
+<!-- ===== しくみ：画面に留まったまま章が切り替わる ===== -->
+<section class="chapters" data-scene data-chapters aria-labelledby="ch-label">
+<div class="scene-stage">
+<div class="ch-side">
+<span class="label" id="ch-label">How it works</span>
+<p class="ch-count" aria-hidden="true"><b>01</b> / 03</p>
+<div class="ch-bar" aria-hidden="true"><i></i></div>
+</div>
+<div class="ch-media" aria-hidden="true">
+<video src="assets/service-plan.mp4" muted loop playsinline preload="metadata"></video>
+<video src="assets/service-video.mp4" muted loop playsinline preload="metadata"></video>
+<video src="assets/service-banner.mp4" muted loop playsinline preload="metadata"></video>
+</div>
+<ol class="ch-list">
+<li class="ch"><small>STEP — PLANNING</small><h3>企画・絵コンテ</h3><p>AIで切り口の違う企画とキャッチコピーを何案も出し、勝てそうな案に絞って提案します。</p></li>
+<li class="ch"><small>STEP — PRODUCTION</small><h3>AIで映像制作</h3><p>動画生成AIで映像をつくり、ナレーション・BGM・テロップを入れて編集します。</p></li>
+<li class="ch"><small>STEP — DELIVERY</small><h3>確認して、すぐ公開</h3><p>修正を反映して完成。媒体ごとのサイズと尺に書き出して納品します。</p></li>
+</ol>
 </div>
 </section>
 
@@ -157,17 +189,33 @@ document.documentElement.classList.add('js');
 </div>
 </section>
 
-<!-- ===== 制作例 ===== -->
+<!-- ===== 小さな枠の映像が、スクロールで画面いっぱいに広がる ===== -->
+<section class="expand" data-scene aria-label="AIでつくった映像">
+<div class="scene-stage">
+<p class="expand-copy">撮影なしで、<br>ここまでつくれる。</p>
+<div class="expand-media" aria-hidden="true"><video data-auto src="assets/hero-2.mp4" muted loop playsinline preload="metadata"></video></div>
+<p class="expand-cap" aria-hidden="true"><span>REEL 02</span><span>100% AI GENERATED</span></p>
+</div>
+</section>
+
+<!-- ===== 制作例：列ごとに違う速さで流れる ===== -->
 <section class="section" aria-labelledby="works-label">
 <div class="wrap">
-<div class="head"><span class="label" id="works-label">Works</span><div style="display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap"><div><h2 class="title" data-reveal>AIでつくった映像</h2><p class="lead" data-reveal>私たちがAIでつくった映像の一部です。</p></div><div class="works-nav"><button type="button" data-dir="prev" aria-label="前へ">←</button><button type="button" data-dir="next" aria-label="次へ">→</button></div></div></div>
-</div>
-<div class="works" data-reveal>
+<div class="head"><span class="label" id="works-label">Works</span><div><h2 class="title" data-reveal>AIでつくった映像</h2><p class="lead" data-reveal>私たちがAIでつくった映像の一部です。</p></div></div>
+<div class="gallery" data-scene="pass">
+<div class="g-col">
 <a class="work" href="service.html"><div class="work-media" data-tc="REEL 01"><video data-auto src="assets/hero.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 01</b><span>16:9 · AI GENERATED</span></div></a>
-<a class="work" href="service.html"><div class="work-media" data-tc="REEL 02"><video data-auto src="assets/hero-2.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 02</b><span>16:9 · AI GENERATED</span></div></a>
-<a class="work" href="service.html"><div class="work-media" data-tc="REEL 03"><video data-auto src="assets/service-video.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 03</b><span>16:9 · AI GENERATED</span></div></a>
 <a class="work" href="service.html"><div class="work-media" data-tc="REEL 04"><video data-auto src="assets/service-banner.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 04</b><span>16:9 · AI GENERATED</span></div></a>
+</div>
+<div class="g-col">
+<a class="work" href="service.html"><div class="work-media" data-tc="REEL 02"><video data-auto src="assets/hero-2.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 02</b><span>16:9 · AI GENERATED</span></div></a>
 <a class="work" href="service.html"><div class="work-media" data-tc="REEL 05"><video data-auto src="assets/service-plan.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 05</b><span>16:9 · AI GENERATED</span></div></a>
+</div>
+<div class="g-col">
+<a class="work" href="service.html"><div class="work-media" data-tc="REEL 03"><video data-auto src="assets/service-video.mp4" muted loop playsinline preload="metadata" aria-hidden="true"></video></div><div class="work-meta"><b>REEL 03</b><span>16:9 · AI GENERATED</span></div></a>
+<a class="g-more" href="service.html">サービスを<br>詳しく見る <span aria-hidden="true">→</span></a>
+</div>
+</div>
 </div>
 </section>
 

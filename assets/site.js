@@ -128,14 +128,43 @@
     row.addEventListener('mouseleave', function () { v.pause(); });
   });
 
-  // ---------- 制作例の横スクロール ----------
-  var works = $('.works');
-  $$('.works-nav button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var card = $('.work', works);
-      works.scrollBy({ left: (card ? card.offsetWidth + 20 : 400) * (b.dataset.dir === 'prev' ? -1 : 1), behavior: reduce ? 'auto' : 'smooth' });
-    });
+  // ---------- スクロール演出：場面ごとの進み具合（0〜1）を --p に渡す ----------
+  var scenes = $$('[data-scene]');
+  var chapters = $$('[data-chapters]').map(function (el) {
+    return { el: el, items: $$('.ch', el), videos: $$('.ch-media video', el), count: $('.ch-count b', el), now: -1 };
   });
+  var setChapter = function (c, n) {
+    if (n === c.now) return;
+    c.now = n;
+    c.items.forEach(function (li, i) { li.classList.toggle('is-on', i === n); });
+    c.videos.forEach(function (v, i) {
+      v.classList.toggle('is-on', i === n);
+      if (i === n && !reduce) v.play().catch(function () {}); else v.pause();
+    });
+    if (c.count && n >= 0) c.count.textContent = String(n + 1).padStart(2, '0');
+  };
+  var sceneQueued = false;
+  var updateScenes = function () {
+    sceneQueued = false;
+    var vh = window.innerHeight;
+    scenes.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      // 画面に留まる場面は「留まっているあいだ」、data-scene="pass" は「画面を通り過ぎるあいだ」で 0 → 1
+      var p = el.dataset.scene === 'pass' ? (vh - r.top) / (vh + r.height) : -r.top / Math.max(1, r.height - vh);
+      el.style.setProperty('--p', Math.max(0, Math.min(1, p)).toFixed(4));
+    });
+    chapters.forEach(function (c) {
+      var r = c.el.getBoundingClientRect();
+      // 画面の外では動画を止める。戻ってきたら今の章からまた再生
+      if (r.bottom < 0 || r.top > vh) { setChapter(c, -1); return; }
+      var p = -r.top / Math.max(1, r.height - vh);
+      setChapter(c, Math.max(0, Math.min(c.items.length - 1, Math.floor(p * c.items.length))));
+    });
+  };
+  var queueScenes = function () { if (!sceneQueued) { sceneQueued = true; requestAnimationFrame(updateScenes); } };
+  window.addEventListener('scroll', queueScenes, { passive: true });
+  window.addEventListener('resize', queueScenes);
+  updateScenes();
 
   // ---------- 追従の相談ボタン：お問い合わせ欄やフッターが見えたら隠す ----------
   var floatCta = $('.float-cta');
