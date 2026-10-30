@@ -14,8 +14,9 @@ AIを使って広告動画を制作する新規事業のトップページ。売
 - `price.html` … 料金
 - `faq.html` … よくある質問
 - `assets/site.css` / `assets/site.js` … 全ページ共通のスタイルと動き
-- `assets/hero.mp4` … ヒーローの動画（任意）。置くとヒーローの背景で自動再生される。無ければ仮のビジュアルが出る
-- `assets/hero-2.mp4` … ヒーローの2本目の動画（任意）。置くと hero.mp4 → hero-2.mp4 → hero.mp4… と交互に流れる。無ければ hero.mp4 をくり返す
+- `assets/hero-3.mp4` … ヒーローの1本目の動画。ヒーローの背景で自動再生される
+- `assets/hero.mp4` … ヒーローの2本目の動画（任意）。置くと hero-3.mp4 → hero.mp4 → hero-3.mp4… と交互に流れる。無ければ hero-3.mp4 をくり返す。Works の REEL 01 でも使う
+- `assets/hero-2.mp4` … About・Works（REEL 02）・YouTube枠・サービス「04」のプレビューで使う動画
 - `assets/service-video.mp4` / `service-banner.mp4` / `service-plan.mp4` … サービスの行にマウスを乗せたときのプレビュー、ヒーロー右下のカード、制作例（Works）で使う動画
 - `assets/service-ad.mp4` … サービス「01 動画広告」の行にマウスを乗せたときのプレビュー動画（30秒のCM）
 

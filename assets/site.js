@@ -95,7 +95,7 @@
   // ---------- 動画：画面に入っているあいだだけ再生（重くならないように） ----------
   var heroVideo = $('.hero-video');
   if (heroVideo) {
-    // hero.mp4 → hero-2.mp4 → … と交互に流す。2 本目が無ければ 1 本目をくり返す
+    // hero-3.mp4 → hero.mp4 → … と交互に流す。2 本目が無ければ 1 本目をくり返す
     var srcs = [heroVideo.getAttribute('src')], idx = 0;
     if (heroVideo.dataset.next) {
       srcs.push(heroVideo.dataset.next);
