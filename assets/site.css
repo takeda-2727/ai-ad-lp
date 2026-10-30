@@ -461,17 +461,20 @@ img, svg, video { max-width: 100%; display: block; }
   .kinetic .scene-stage { padding: 80px 0 32px; }
 
   /* ヒーロー：留まっているあいだに映像が暗く沈み、見出しが大きく浮かび上がる
-     .hero-fade の opacity / transform は登場の動きが使うので、ここでは filter と translate / scale で動かす */
+     .hero-fade の opacity / transform は登場の動きが使うので、ここでは filter と translate / scale で動かす
+     毎フレーム変わるのは「拡大・移動・不透明度」だけにして、描き直しの重いぼかしなどは使わない */
   .hero { height: 200vh; min-height: 0; overflow: visible; }
   .hero-stage { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 640px; overflow: hidden; }
-  .hero-video.is-ready { filter: brightness(calc(1 - var(--p) * .45)) saturate(calc(1 - var(--p) * .5)) blur(calc(var(--p) * 6px)); scale: calc(1 + var(--p) * .12); }
-  .hero-media::after { opacity: calc(var(--p) * .55); }
-  .hero-title { transform-origin: left bottom; translate: 0 calc(var(--p) * -12vh); scale: calc(1 + var(--p) * .16); }
-  /* 1 文字ずつの枠で切れないよう、影は text-shadow ではなく em 全体の drop-shadow で付ける */
-  .hero-title em { filter: drop-shadow(0 0 calc(var(--p) * 18px) rgba(198,244,50,.6)); }
-  .hero-actions { translate: 0 calc(var(--p) * -12vh); }
-  .hero-kicker, .hero-rot, .hero-data, .hero-cards, .scroll-cue { filter: opacity(max(0, calc(1 - var(--p) * 3))); }
+  .hero-video { scale: calc(1 + var(--p) * .12); will-change: scale; }
+  .hero-media::after { opacity: calc(var(--p) * .7); will-change: opacity; }
+  .hero-title { transform-origin: left bottom; translate: 0 calc(var(--p) * -12vh); scale: calc(1 + var(--p) * .16); will-change: translate, scale; }
+  /* 1 文字ずつの枠で切れないよう、影は text-shadow ではなく em 全体の drop-shadow で付ける。光るのは途中で 1 回だけ */
+  .hero-title em { filter: drop-shadow(0 0 0 rgba(198,244,50,0)); transition: filter .8s var(--ease); }
+  .hero.is-past .hero-title em { filter: drop-shadow(0 0 18px rgba(198,244,50,.6)); }
+  .hero-actions { translate: 0 calc(var(--p) * -12vh); will-change: translate; }
+  .hero-kicker, .hero-rot, .hero-data, .hero-cards, .scroll-cue { filter: opacity(max(0, calc(1 - var(--p) * 3))); will-change: filter; }
   .hero-kicker, .hero-rot { translate: 0 calc(var(--p) * -12vh); }
+  .hero.is-past .hero-data, .hero.is-past .hero-cards, .hero.is-past .scroll-cue { visibility: hidden; }
 
   /* 私たちについて：留まっているあいだに文章が光りきり、最後にボタンが上がってくる */
   .about-scene { height: 220vh; padding: 0; }
@@ -487,14 +490,14 @@ img, svg, video { max-width: 100%; display: block; }
   .k-4 { transform: translateX(calc(-35vw + var(--p) * 45vw)); }
   .k-note { opacity: calc(var(--p) * 4 - 2.4); transform: translateY(calc((1 - var(--p)) * 40px)); }
 
-  /* 前半で枠が広がりきり、後半は全画面のまま見せる */
+  /* 前半で枠が広がりきり、後半は全画面のまま見せる
+     切り抜き（clip-path）は毎フレーム描き直しになるので、枠ごと拡大して広げる */
   .expand .scene-stage { max-width: none; display: block; }
   .expand-media {
     --e: min(1, calc(var(--p) * 1.6));
     position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0;
-    clip-path: inset(calc((1 - var(--e)) * 32%) calc((1 - var(--e)) * 36%) round calc((1 - var(--e)) * 8px));
+    transform: scale(calc(.3 + var(--e) * .7)); will-change: transform;
   }
-  .expand-media video { transform: scale(calc(1.25 - var(--e) * .25)); }
   .expand-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,10,.7), transparent 30%); opacity: calc(var(--p) * 3 - 1.5); }
   .expand-copy { position: absolute; z-index: 2; left: var(--gutter); top: max(84px, 11vh); font-size: clamp(28px, 4vw, 56px); opacity: calc(1 - var(--p) * 3); transform: translateY(calc(var(--p) * -80px)); }
   .expand-cap { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 96px; color: #fff; opacity: calc(var(--p) * 4 - 2.6); }

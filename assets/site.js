@@ -130,9 +130,15 @@
   });
 
   // ---------- スクロール演出：場面ごとの進み具合（0〜1）を --p に渡す ----------
-  var scenes = $$('[data-scene]');
+  // スクロール位置にそのまま合わせるとホイール 1 回ぶんずつ飛んでカクつくので、
+  // 目標の値へ毎フレーム少しずつ近づけて、なめらかに動かす
+  var scenes = $$('[data-scene]').map(function (el) {
+    return { el: el, pass: el.dataset.scene === 'pass', top: 0, height: 0, cur: -1, shown: -1 };
+  });
+  var sceneOf = function (el) { return scenes.filter(function (s) { return s.el === el; })[0]; };
+  var isPinned = function (stage) { return !reduce && !!stage && getComputedStyle(stage).position === 'sticky'; };
   var chapters = $$('[data-chapters]').map(function (el) {
-    return { el: el, items: $$('.chapter', el), videos: $$('.ch-media video', el), count: $('.ch-count b', el), now: -1 };
+    return { scene: sceneOf(el), items: $$('.chapter', el), videos: $$('.ch-media video', el), count: $('.ch-count b', el), now: -1 };
   });
   var setChapter = function (c, n) {
     if (n === c.now) return;
@@ -145,51 +151,85 @@
     if (c.count && n >= 0) c.count.textContent = String(n + 1).padStart(2, '0');
   };
   var stepScenes = $$('[data-steps]').map(function (el) {
-    return { el: el, stage: $('.scene-stage', el), steps: $$('[data-step]', el) };
+    return {
+      el: el, scene: sceneOf(el), stage: $('.scene-stage', el), pinned: false,
+      steps: $$('[data-step]', el).map(function (st) {
+        return { el: st, shown: -1, counts: $$('[data-count]', st).map(function (c) { return { el: c, to: parseFloat(c.getAttribute('data-count')), shown: null }; }) };
+      })
+    };
   });
-  var sceneQueued = false;
-  var updateScenes = function () {
-    sceneQueued = false;
+  glows.forEach(function (g) { g.sc = g.scene && sceneOf(g.scene); });
+
+  // 留めるかどうかは画面の大きさで決まるので、読み込み時と大きさが変わったときだけ調べる
+  var measure = function () {
+    stepScenes.forEach(function (s) {
+      s.pinned = isPinned(s.stage);
+      if (s.pinned) { s.el.dataset.pinned = '1'; return; }
+      // 留めなくなったら、数字は最終の値で見せる
+      if (s.el.dataset.pinned) {
+        delete s.el.dataset.pinned;
+        s.steps.forEach(function (st) { st.el.style.removeProperty('--q'); st.shown = -1; st.counts.forEach(function (c) { c.el.textContent = c.to; c.shown = null; }); });
+      }
+    });
+    glows.forEach(function (g) { g.pinned = isPinned(g.stage); });
+  };
+
+  var clamp01 = function (v) { return v < 0 ? 0 : v > 1 ? 1 : v; };
+  var raf = 0, lastT = 0;
+  var frame = function (now) {
+    raf = 0;
     var vh = window.innerHeight;
-    scenes.forEach(function (el) {
-      var r = el.getBoundingClientRect();
+    // 1 フレームで差の約 10% ずつ近づく（画面の書き換え回数が違っても同じ速さになるよう時間で調整）
+    var k = 1 - Math.pow(0.9,Math.min(64, lastT ? now - lastT : 16.7) / 16.7);
+    lastT = now;
+    // 位置はまとめて先に読み、書き込みはあとでまとめて行う（交互にすると毎回計算し直しになり重い）
+    scenes.forEach(function (s) { var r = s.el.getBoundingClientRect(); s.top = r.top; s.height = r.height; });
+    glows.forEach(function (g) { if (!g.pinned) { var r = g.el.getBoundingClientRect(); g.top = r.top; g.height = r.height; } });
+
+    var moving = false;
+    scenes.forEach(function (s) {
       // 画面に留まる場面は「留まっているあいだ」、data-scene="pass" は「画面を通り過ぎるあいだ」で 0 → 1
-      var p = el.dataset.scene === 'pass' ? (vh - r.top) / (vh + r.height) : -r.top / Math.max(1, r.height - vh);
-      el.style.setProperty('--p', Math.max(0, Math.min(1, p)).toFixed(4));
+      s.target = clamp01(s.pass ? (vh - s.top) / (vh + s.height) : -s.top / Math.max(1, s.height - vh));
+      if (s.cur < 0 || reduce) s.cur = s.target; else s.cur += (s.target - s.cur) * k;
+      if (Math.abs(s.target - s.cur) < 0.0005) s.cur = s.target; else moving = true;
+      if (s.cur !== s.shown) { s.el.style.setProperty('--p', s.cur.toFixed(4)); s.shown = s.cur; }
+      // 消えきった部品は visibility でも隠し、見えないのに重い処理（背景のぼかしなど）を止める
+      s.el.classList.toggle('is-past', s.cur > 0.4);
     });
     chapters.forEach(function (c) {
-      var r = c.el.getBoundingClientRect();
+      var s = c.scene;
       // 画面の外では動画を止める。戻ってきたら今の章からまた再生
-      if (r.bottom < 0 || r.top > vh) { setChapter(c, -1); return; }
-      var p = -r.top / Math.max(1, r.height - vh);
-      setChapter(c, Math.max(0, Math.min(c.items.length - 1, Math.floor(p * c.items.length))));
+      if (s.top + s.height < 0 || s.top > vh) { setChapter(c, -1); return; }
+      setChapter(c, Math.max(0, Math.min(c.items.length - 1, Math.floor(s.target * c.items.length))));
     });
     // 数字の場面：留まっているあいだに 1 つずつ出して、スクロールに合わせて数える
     stepScenes.forEach(function (s) {
-      var pinned = !reduce && getComputedStyle(s.stage).position === 'sticky';
-      if (!pinned) {
-        // 画面の大きさが変わって留めなくなったら、数字は最終の値で見せる
-        if (s.el.dataset.pinned) {
-          delete s.el.dataset.pinned;
-          s.steps.forEach(function (st) { st.style.removeProperty('--q'); });
-          $$('[data-count]', s.el).forEach(function (c) { c.textContent = c.getAttribute('data-count'); });
-        }
-        return;
-      }
-      s.el.dataset.pinned = '1';
-      var r = s.el.getBoundingClientRect();
-      var p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height - vh)));
+      if (!s.pinned) return;
       s.steps.forEach(function (st, i) {
-        var q = Math.max(0, Math.min(1, (p - 0.05 - i * 0.25) / 0.25));
-        st.style.setProperty('--q', q.toFixed(3));
-        $$('[data-count]', st).forEach(function (c) { c.textContent = Math.round(parseFloat(c.getAttribute('data-count')) * q); });
+        var q = Math.round(clamp01((s.scene.cur - 0.05 - i * 0.25) / 0.25) * 1000) / 1000;
+        if (q === st.shown) return;
+        st.shown = q;
+        st.el.style.setProperty('--q', q);
+        st.counts.forEach(function (c) { var n = Math.round(c.to * q); if (n !== c.shown) { c.el.textContent = n; c.shown = n; } });
       });
     });
+    // スクロールに合わせて光る文章：留まる場面の中なら、留まっているあいだの前 3/4 で光りきる
+    if (!reduce) glows.forEach(function (g) {
+      var p = g.pinned ? clamp01(g.sc.cur / 0.75) : clamp01((vh * 0.85 - g.top) / (g.height + vh * 0.3));
+      var n = Math.round(p * g.spans.length);
+      if (n === g.lit) return;
+      for (var i = Math.min(n, g.lit); i < Math.max(n, g.lit); i++) g.spans[i].classList.toggle('on', i < n);
+      g.lit = n;
+    });
+
+    if (moving) raf = requestAnimationFrame(frame); else lastT = 0;
   };
-  var queueScenes = function () { if (!sceneQueued) { sceneQueued = true; requestAnimationFrame(updateScenes); } };
-  window.addEventListener('scroll', queueScenes, { passive: true });
-  window.addEventListener('resize', queueScenes);
-  updateScenes();
+  var kick = function () { if (!raf) raf = requestAnimationFrame(frame); };
+  window.addEventListener('scroll', kick, { passive: true });
+  window.addEventListener('resize', function () { measure(); kick(); });
+  window.addEventListener('load', function () { measure(); kick(); });
+  measure();
+  frame(performance.now());
 
   // ---------- 追従の相談ボタン：お問い合わせ欄やフッターが見えたら隠す ----------
   var floatCta = $('.float-cta');
@@ -238,18 +278,6 @@
       countUp(el);
       return false;
     });
-    if (!reduce) glows.forEach(function (g) {
-      var r = g.el.getBoundingClientRect(), p;
-      // 画面に留まる場面の中なら、留まっているあいだの前 3/4 で光りきる
-      if (g.stage && getComputedStyle(g.stage).position === 'sticky') {
-        var sr = g.scene.getBoundingClientRect();
-        p = Math.max(0, Math.min(1, -sr.top / Math.max(1, sr.height - vh) / 0.75));
-      } else p = Math.max(0, Math.min(1, (vh * 0.85 - r.top) / (r.height + vh * 0.3)));
-      var n = Math.round(p * g.spans.length);
-      if (n === g.lit) return;
-      for (var i = Math.min(n, g.lit); i < Math.max(n, g.lit); i++) g.spans[i].classList.toggle('on', i < n);
-      g.lit = n;
-    });
     var max = document.documentElement.scrollHeight - vh;
     var prog = max > 0 ? window.scrollY / max : 0;
     var cur = Math.round(prog * (tickEls.length - 1));
@@ -260,8 +288,11 @@
       lastY = y;
     }
   };
-  window.addEventListener('scroll', check, { passive: true });
-  window.addEventListener('resize', check);
+  // スクロールイベントは 1 フレームに何度も来ることがあるので、確認は 1 フレームに 1 回にまとめる
+  var checkQueued = false;
+  var queueCheck = function () { if (!checkQueued) { checkQueued = true; requestAnimationFrame(function () { checkQueued = false; check(); }); } };
+  window.addEventListener('scroll', queueCheck, { passive: true });
+  window.addEventListener('resize', queueCheck);
   window.addEventListener('load', check);
   // スクロールイベントが届かない環境でも、出しきるまで 0.5 秒ごとに確認する
   var poll = setInterval(function () { check(); if (!pending.length && !counters.length) clearInterval(poll); }, 500);
