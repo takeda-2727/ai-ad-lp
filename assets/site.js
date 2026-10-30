@@ -242,6 +242,26 @@
     $$('.hero, .contact, .footer').forEach(function (t) { fio.observe(t); });
   }
 
+  // ---------- お問い合わせ：入力内容を入れた状態でメールアプリを開く ----------
+  var mailForm = $('.mail-form');
+  if (mailForm) {
+    mailForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var f = mailForm.elements;
+      var body = [
+        'お名前：' + f.name.value,
+        '会社名・店舗名：' + (f.company.value || '—'),
+        'メールアドレス：' + f.email.value,
+        'ご相談の内容：' + f.topic.value,
+        '',
+        f.message.value
+      ].join('\n');
+      location.href = 'mailto:' + mailForm.dataset.to +
+        '?subject=' + encodeURIComponent('【無料相談】' + f.topic.value + '（' + f.name.value + '様）') +
+        '&body=' + encodeURIComponent(body);
+    });
+  }
+
   // ---------- スクロール連動：表示・数字・光る文章・目盛り・カプセルの出し入れ ----------
   root.classList.add('reveal-ready');
   var pending = $$('[data-reveal]');
